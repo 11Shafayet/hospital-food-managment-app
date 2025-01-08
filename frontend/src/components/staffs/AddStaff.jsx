@@ -79,7 +79,7 @@ const AddStaff = ({ isOpen, onClose }) => {
                 name="gender"
                 value={staffData.gender}
                 onChange={handleChange}
-                className="input-field text-black"
+                className="input-field"
                 required
               >
                 <option value="" hidden>
@@ -139,7 +139,7 @@ const AddStaff = ({ isOpen, onClose }) => {
               name="role"
               value={staffData.role}
               onChange={handleChange}
-              className="input-field text-black"
+              className="input-field"
               required
             >
               <option value="" hidden>
@@ -147,7 +147,7 @@ const AddStaff = ({ isOpen, onClose }) => {
               </option>
               <option value="manager">Manager</option>
               <option value="supervisor">Supervisor</option>
-              <option value="staff">Staff</option>
+              <option value="deliveryMan">Delivery Man</option>
               <option value="chef">Chef</option>
             </select>
           </div>

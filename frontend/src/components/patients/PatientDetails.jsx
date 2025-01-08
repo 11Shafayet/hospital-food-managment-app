@@ -20,6 +20,12 @@ const PatientDetails = ({ isOpen, onClose, patient }) => {
       phone: '(555) 987-6543',
     },
     others: 'Patient requires wheelchair assistance',
+    foodPlan: {
+      morning: ['eggs', 'milk', 'banana'],
+      afternoon: ['salad', 'rice', 'chicken'],
+      evening: ['fish', 'rice', 'vegetable'],
+      note: 'Patient is allergic to peanuts and seafood',
+    },
   };
 
   if (!isOpen) return null;
@@ -53,20 +59,7 @@ const PatientDetails = ({ isOpen, onClose, patient }) => {
               onClick={onClose}
               className="duration-300 hover:rotate-90 hover:scale-125"
             >
-              <span className="sr-only">Close</span>
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              ✕
             </button>
           </div>
 
@@ -107,6 +100,33 @@ const PatientDetails = ({ isOpen, onClose, patient }) => {
                 }
               />
               <DetailItem label="Others" value={patientData.others} />
+
+              {/* Add Food Plan */}
+              <div className="w-full p-2">
+                <div className="rounded-lg bg-white bg-opacity-10 p-4">
+                  <h3 className="text-sm font-medium text-theme">Food Plan</h3>
+                  <div className="mt-1 space-y-2">
+                    <div>
+                      <span className="font-medium">Morning:</span>{' '}
+                      {patientData.foodPlan.morning.join(', ')}
+                    </div>
+                    <div>
+                      <span className="font-medium">Afternoon:</span>{' '}
+                      {patientData.foodPlan.afternoon.join(', ')}
+                    </div>
+                    <div>
+                      <span className="font-medium">Evening:</span>{' '}
+                      {patientData.foodPlan.evening.join(', ')}
+                    </div>
+                    {patientData.foodPlan.note && (
+                      <div className="mt-2 text-yellow-400">
+                        <span className="font-medium">Note:</span>{' '}
+                        {patientData.foodPlan.note}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

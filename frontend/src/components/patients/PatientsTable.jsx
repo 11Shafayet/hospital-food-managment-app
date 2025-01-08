@@ -21,6 +21,12 @@ const patients = [
       phone: '(555) 987-6543',
     },
     others: 'Patient requires wheelchair assistance',
+    foodPlan: {
+      morning: ['eggs', 'milk', 'banana'],
+      afternoon: ['salad', 'rice', 'chicken'],
+      evening: ['fish', 'rice', 'vegetable'],
+      note: 'Patient is allergic to peanuts and seafood',
+    },
   },
   {
     name: 'Shafayetur Rahman',
@@ -41,6 +47,12 @@ const patients = [
       phone: '(555) 987-6543',
     },
     others: 'Patient requires wheelchair assistance',
+    foodPlan: {
+      morning: ['eggs', 'milk', 'banana'],
+      afternoon: ['salad', 'rice', 'chicken'],
+      evening: ['fish', 'rice', 'vegetable'],
+      note: 'Patient is allergic to peanuts and seafood',
+    },
   },
 ];
 
@@ -80,7 +92,7 @@ const PatientsTable = () => {
               </thead>
               <tbody className="divide-y divide-gray-700">
                 {patients.map((patient) => (
-                  <tr key={patient.id} className="border-b border-gray-700">
+                  <tr key={patient._id} className="border-b border-gray-700">
                     <td className="table-body">{patient.name}</td>
                     <td className="table-body">{patient.floorNo}</td>
                     <td className="table-body">{patient.roomNo}</td>
