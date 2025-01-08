@@ -1,5 +1,13 @@
 import React, { useState } from 'react';
 
+const generateRandomPassword = () => {
+  const chars =
+    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  return Array.from({ length: 15 }, () =>
+    chars.charAt(Math.floor(Math.random() * chars.length))
+  ).join('');
+};
+
 const AddStaff = ({ isOpen, onClose }) => {
   const [staffData, setStaffData] = useState({
     name: '',
@@ -9,6 +17,8 @@ const AddStaff = ({ isOpen, onClose }) => {
     address: '',
     dutyTime: '',
     role: '',
+    email: '',
+    password: generateRandomPassword(),
     assignedDuty: [],
   });
 
@@ -103,6 +113,49 @@ const AddStaff = ({ isOpen, onClose }) => {
               className="input-field"
               required
             />
+          </div>
+
+          {/* email and password */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* email */}
+            <div>
+              <label className="input-label">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={staffData.email}
+                onChange={handleChange}
+                className="input-field"
+                required
+              />
+            </div>
+
+            {/* password */}
+            <div>
+              <label className="input-label">Password</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  name="password"
+                  value={staffData.password}
+                  onChange={handleChange}
+                  className="input-field pr-24"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setStaffData((prev) => ({
+                      ...prev,
+                      password: generateRandomPassword(),
+                    }))
+                  }
+                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded bg-theme px-2 py-1 text-xs text-white hover:bg-opacity-90"
+                >
+                  Generate
+                </button>
+              </div>
+            </div>
           </div>
 
           {/* address */}
