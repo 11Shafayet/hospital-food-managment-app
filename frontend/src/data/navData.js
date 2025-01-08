@@ -19,14 +19,4 @@ export const navData = [
     link: '/delivery-details',
     pathName: '/delivery-details',
   },
-  {
-    title: 'Food Charts',
-    link: '/food-charts',
-    pathName: '/food-charts',
-  },
-  {
-    title: 'Profile',
-    link: '/profile',
-    pathName: '/profile',
-  },
 ];

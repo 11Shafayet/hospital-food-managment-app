@@ -9,8 +9,6 @@ import Dashboard from '../pages/Dashboard';
 import Patient from '../pages/Patient';
 import Staffs from '../pages/Staffs';
 import Delivery from '../pages/Delivery';
-import FoodChart from '../pages/FoodChart';
-import Profile from '../pages/Profile';
 
 const router = createBrowserRouter([
   {
@@ -49,23 +47,6 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
-      {
-        path: '/food-charts',
-        element: (
-          <PrivateRoute>
-            <FoodChart />
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: '/profile',
-        element: (
-          <PrivateRoute>
-            <Profile />
-          </PrivateRoute>
-        ),
-      },
-
       {
         path: '/sign-in',
         element: (

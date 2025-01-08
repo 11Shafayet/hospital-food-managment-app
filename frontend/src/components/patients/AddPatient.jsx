@@ -114,7 +114,7 @@ const AddPatient = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 text-white">
-      <div className="relative max-h-[90vh] w-full max-w-md rounded-lg bg-slate-900">
+      <div className="relative max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-lg bg-slate-900">
         {/* Fixed header */}
         <div className="sticky top-0 z-10 bg-slate-900 p-8 pb-4">
           <div className="mb-6 flex items-center justify-between">
@@ -129,8 +129,12 @@ const AddPatient = ({ isOpen, onClose }) => {
         </div>
 
         {/* Scrollable form content */}
-        <div className="overflow-y-auto p-8 pt-0">
-          <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="max-h-[calc(90vh-160px)] overflow-y-auto p-8 pt-0">
+          <form
+            id="patientForm"
+            onSubmit={handleSubmit}
+            className="mb-10 space-y-4"
+          >
             {/* Basic Information */}
             <div>
               <label className="input-label">Name</label>

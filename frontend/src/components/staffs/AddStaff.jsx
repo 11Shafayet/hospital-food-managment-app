@@ -31,7 +31,7 @@ const AddStaff = ({ isOpen, onClose }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-90 text-white">
-      <div className="w-full max-w-md rounded-lg bg-slate-900 p-8">
+      <div className="w-full max-w-2xl rounded-lg bg-slate-900 p-8">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-bold">Add New Staff</h2>
           {/* close button */}
