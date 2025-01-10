@@ -1,26 +1,93 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { FaTrash, FaEye } from 'react-icons/fa';
 import StaffDetails from './StaffDetails';
-
-const staffs = [
-  {
-    name: 'John Doe',
-    age: 45,
-    gender: 'Male',
-    phone: '(555) 123-4567',
-    address: '123 Main St, City, State',
-    dutyTime: '9:00 AM - 5:00 PM',
-    assignedDuty: ['Floor 1', 'Floor 2', 'Floor 3'],
-  },
-];
+import { toast } from 'react-toastify';
 
 const StaffsTable = () => {
+  const queryClient = useQueryClient();
   const [selectedStaff, setSelectedStaff] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const [userRole, setUserRole] = useState(() => {
+    const userString = localStorage.getItem('userData');
+    if (!userString) return '';
+
+    try {
+      const user = JSON.parse(userString);
+      return user.role || '';
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      return '';
+    }
+  });
+
+  const {
+    data: staffs,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['staffs'],
+    queryFn: async () => {
+      const response = await fetch('http://localhost:5000/api/users');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        return data.users || data.data || [];
+      }
+      return data;
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (staffId) => {
+      const token = localStorage.getItem('token');
+      console.log(token);
+
+      const response = await fetch(
+        `http://localhost:5000/api/users/${staffId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete staff member');
+      }
+
+      return staffId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staffs'] });
+      toast.success('Staff member deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete staff member');
+    },
+  });
 
   const handleViewStaff = (staff) => {
     setSelectedStaff(staff);
     setShowDetails(true);
   };
+
+  const handleDeleteStaff = (staffId) => {
+    if (window.confirm('Are you sure you want to delete this staff member?')) {
+      deleteMutation.mutate(staffId);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="text-center py-4 text-red-500">
+        Error: {error.message}
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -40,46 +107,54 @@ const StaffsTable = () => {
                   <th className="table-header">Age</th>
                   <th className="table-header">Gender</th>
                   <th className="table-header">Phone</th>
-                  <th className="table-header">Address</th>
+                  <th className="table-header">Role</th>
                   <th className="table-header">Duty Time</th>
                   <th className="table-header">Assigned Duty</th>
                   <th className="table-header text-center">Actions</th>
+                  {userRole === 'manager' && (
+                    <th className="table-header text-center">Delete</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {staffs.map((staff, index) => (
-                  <tr key={index} className="border-b border-gray-700">
-                    <td className="table-body">{staff.name}</td>
-                    <td className="table-body">{staff.age}</td>
-                    <td className="table-body">{staff.gender}</td>
-                    <td className="table-body">{staff.phone}</td>
-                    <td className="table-body">{staff.address}</td>
-                    <td className="table-body">{staff.dutyTime}</td>
-                    <td className="table-body">
-                      {staff.assignedDuty.join(', ')}
-                    </td>
-                    <td className="table-body text-center">
-                      <button
-                        onClick={() => handleViewStaff(staff)}
-                        className="rounded-full p-2 text-blue-500 hover:bg-gray-700 hover:text-blue-400"
+                {Array.isArray(staffs) &&
+                  staffs.map((staff, index) => (
+                    <tr key={index} className="border-b border-gray-700">
+                      <td className="table-body">{staff.name}</td>
+                      <td className="table-body">{staff.age}</td>
+                      <td className="table-body">{staff.gender}</td>
+                      <td className="table-body">{staff.phone}</td>
+                      <td className="table-body">{staff.role}</td>
+                      <td className="table-body">{staff.dutyTime}</td>
+                      <td
+                        className={`table-body ${
+                          !staff.assignedDuty ? 'bg-red-600 bg-opacity-20' : ''
+                        }`}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
+                        <span className="capitalize">
+                          {staff.assignedDuty || 'No duties assigned'}
+                        </span>
+                      </td>
+                      <td className="table-body text-center">
+                        <button
+                          onClick={() => handleViewStaff(staff)}
+                          className="rounded-full p-2 text-blue-500 hover:bg-gray-700 hover:text-blue-400"
                         >
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path
-                            fillRule="evenodd"
-                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                          <FaEye className="h-4 w-4" />
+                        </button>
+                      </td>
+                      {userRole === 'manager' && (
+                        <td className="table-body text-center">
+                          <button
+                            onClick={() => handleDeleteStaff(staff._id)}
+                            className="rounded-full p-2 text-red-500 hover:bg-gray-700 hover:text-red-400"
+                          >
+                            <FaTrash className="h-4 w-4" />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>

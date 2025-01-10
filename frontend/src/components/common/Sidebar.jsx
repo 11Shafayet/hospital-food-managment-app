@@ -1,10 +1,24 @@
-import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useState, useContext } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../../Provider/AuthProvider';
 import { navData } from '../../data/navData';
+import { toast } from 'react-toastify';
 
 const Sidebar = () => {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useContext(AuthContext);
+
+  const handleLogout = () => {
+    try {
+      logout();
+      toast.success('Logged out successfully');
+      navigate('/sign-in');
+    } catch (error) {
+      toast.error('Logout failed');
+    }
+  };
 
   return (
     <>
@@ -27,20 +41,18 @@ const Sidebar = () => {
                 <Link
                   to={`${item.link}`}
                   key={i}
-                  className={`flex items-center py-5 px-11 border-b group hover:bg-white hover:bg-opacity-10 duration-300 ${
+                  className={`sidebar-button ${
                     pathname === item.link && 'bg-white bg-opacity-10'
                   }`}
                 >
-                  <span
-                    dangerouslySetInnerHTML={{ __html: item.icon }}
-                    className="mr-2.5"
-                  />
-                  <p className="opacity-50 duration-500 group-hover:opacity-100">
-                    {item.title}
-                  </p>
+                  <p>{item.title}</p>
                 </Link>
               );
             })}
+
+            <button className="sidebar-button" onClick={handleLogout}>
+              Log out
+            </button>
           </div>
         </div>
       </div>
@@ -75,28 +87,25 @@ const Sidebar = () => {
                 open ? 'top-[97px]' : '-top-[500px]'
               } z-50 duration-300`}
             >
-              {' '}
               <div className="flex w-full flex-col">
                 {navData.map((item, i) => {
                   return (
                     <Link
                       to={`${item.link}`}
                       key={i}
-                      className={`flex items-center py-5 px-11 border-b group hover:bg-white hover:bg-opacity-10 duration-300 ${
-                        pathname === item.link && 'bg-white bg-opacity-10'
+                      className={`sidebar-button ${
+                        pathname === item.link && 'bg-white bg-opacity-20'
                       }`}
                     >
-                      <span
-                        dangerouslySetInnerHTML={{ __html: item.icon }}
-                        className="mr-2.5"
-                      />
-                      <p className="opacity-50 duration-500 group-hover:opacity-100">
-                        {item.title}
-                      </p>
+                      <p>{item.title}</p>
                     </Link>
                   );
                 })}
               </div>
+
+              <button className="sidebar-button" onClick={handleLogout}>
+                Log out
+              </button>
             </div>
           </div>
         </div>

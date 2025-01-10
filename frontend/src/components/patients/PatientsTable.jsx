@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { FaTrash, FaEye } from 'react-icons/fa';
 import PatientDetails from './PatientDetails';
+import { toast } from 'react-toastify';
 
 const patients = [
   {
     name: 'John Doe',
-    diseases: ['Diabetes Type 2', 'Hypertension'],
-    allergies: ['Penicillin', 'Peanuts'],
+    diseases: 'Diabetes Type 2, Hypertension',
+    allergies: 'Penicillin, Peanuts',
     floorNo: '3',
     roomNo: '304',
     bedNo: 'B2',
@@ -59,11 +62,87 @@ const patients = [
 const PatientsTable = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  const queryClient = useQueryClient();
+  const [userRole, setUserRole] = useState(() => {
+    const userString = localStorage.getItem('userData');
+    if (!userString) return '';
+    try {
+      const user = JSON.parse(userString);
+      return user.role || '';
+    } catch (error) {
+      console.error('Error parsing user from localStorage:', error);
+      return '';
+    }
+  });
+
+  const {
+    data: patients,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['patients'],
+    queryFn: async () => {
+      const response = await fetch('http://localhost:5000/api/users');
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      if (!Array.isArray(data)) {
+        return data.users || data.data || [];
+      }
+      return data;
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (patientId) => {
+      const token = localStorage.getItem('token');
+
+      const response = await fetch(
+        `http://localhost:5000/api/users/${patientId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to delete staff member');
+      }
+
+      return staffId;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['staffs'] });
+      toast.success('Staff member deleted successfully');
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to delete staff member');
+    },
+  });
 
   const handleViewPatient = (patient) => {
     setSelectedPatient(patient);
     setShowDetails(true);
   };
+
+  const handleDeletePatient = (patientId) => {
+    if (
+      window.confirm("Are you sure you want to delete this patient's data?")
+    ) {
+      deleteMutation.mutate(patientId);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="text-center py-4 text-red-500">
+        Error: {error.message}
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -88,45 +167,56 @@ const PatientsTable = () => {
                   <th className="table-header">Age</th>
                   <th className="table-header">Gender</th>
                   <th className="table-header text-center">Actions</th>
+                  {userRole === 'manager' && (
+                    <th className="table-header text-center">Delete</th>
+                  )}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-700">
-                {patients.map((patient) => (
-                  <tr key={patient._id} className="border-b border-gray-700">
-                    <td className="table-body">{patient.name}</td>
-                    <td className="table-body">{patient.floorNo}</td>
-                    <td className="table-body">{patient.roomNo}</td>
-                    <td className="table-body">{patient.bedNo}</td>
-                    <td className="table-body">
-                      {patient.diseases.join(', ')}
-                    </td>
-                    <td className="table-body">
-                      {patient.allergies.join(', ')}
-                    </td>
-                    <td className="table-body">{patient.age}</td>
-                    <td className="table-body">{patient.gender}</td>
-                    <td className="table-body text-center">
-                      <button
-                        onClick={() => handleViewPatient(patient)}
-                        className="rounded-full p-2 text-blue-500 hover:bg-gray-700 hover:text-blue-400"
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path
-                            fillRule="evenodd"
-                            d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {Array.isArray(patients) &&
+                  patients.map((patient) => {
+                    const {
+                      _id,
+                      name,
+                      floorNo,
+                      roomNo,
+                      bedNo,
+                      age,
+                      gender,
+                      diseases,
+                      allergies,
+                    } = patient;
+                    return (
+                      <tr key={_id} className="border-b border-gray-700">
+                        <td className="table-body">{name}</td>
+                        <td className="table-body">{floorNo}</td>
+                        <td className="table-body">{roomNo}</td>
+                        <td className="table-body">{bedNo}</td>
+                        <td className="table-body">{diseases}</td>
+                        <td className="table-body">{allergies}</td>
+                        <td className="table-body">{age}</td>
+                        <td className="table-body">{gender}</td>
+                        <td className="table-body text-center">
+                          <button
+                            onClick={() => handleViewPatient(patient)}
+                            className="rounded-full p-2 text-blue-500 hover:bg-gray-700 hover:text-blue-400"
+                          >
+                            <FaEye className="h-4 w-4" />
+                          </button>
+                        </td>
+                        {userRole === 'manager' && (
+                          <td className="table-body text-center">
+                            <button
+                              onClick={() => handleDeletePatient(_id)}
+                              className="rounded-full p-2 text-red-500 hover:bg-gray-700 hover:text-red-400"
+                            >
+                              <FaTrash className="h-4 w-4" />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })}
               </tbody>
             </table>
           </div>

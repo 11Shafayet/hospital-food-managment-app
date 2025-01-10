@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
 
 const generateRandomPassword = () => {
   const chars =
@@ -19,14 +21,41 @@ const AddStaff = ({ isOpen, onClose }) => {
     role: '',
     email: '',
     password: generateRandomPassword(),
-    assignedDuty: [],
+    assignedDuty: '',
+  });
+
+  const addStaffMutation = useMutation({
+    mutationFn: async (newStaff) => {
+      const response = await fetch('http://localhost:5000/api/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newStaff),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(
+          errorData.message || `Failed to add staff: ${response.status}`
+        );
+      }
+
+      return response.json();
+    },
+    onSuccess: () => {
+      toast.success('Staff added successfully');
+      onClose();
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to add staff');
+      console.log('Staff data being sent:', staffData);
+    },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log(staffData);
-    onClose();
+    addStaffMutation.mutate(staffData);
   };
 
   const handleChange = (e) => {
@@ -95,9 +124,9 @@ const AddStaff = ({ isOpen, onClose }) => {
                 <option value="" hidden>
                   Select
                 </option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
               </select>
             </div>
           </div>
@@ -203,6 +232,20 @@ const AddStaff = ({ isOpen, onClose }) => {
               <option value="deliveryMan">Delivery Man</option>
               <option value="chef">Chef</option>
             </select>
+          </div>
+
+          {/* assigned duty */}
+          <div>
+            <label className="input-label">Assigned Duty</label>
+            <input
+              type="text"
+              name="assignedDuty"
+              value={staffData.assignedDuty}
+              onChange={handleChange}
+              className="input-field"
+              placeholder="Enter assigned duties"
+              required
+            />
           </div>
 
           {/* buttons */}

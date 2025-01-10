@@ -3,42 +3,58 @@ import sendResponse from '../../utils/sendResponse.js';
 import { UserServices } from './user.service.js';
 import { User } from './user.model.js';
 
-// name: '',
-// age: '',
-// gender: '',
-// phone: '',
-// email: '',
-// password: '',
-// address: '',
-// dutyTime: '',
-// role: '',
+// {
+//     name: '',
+//     diseases: 'Diabetes Type 2, Hypertension',
+//     allergies: 'Penicillin, Peanuts',
+//     floorNo: '3',
+//     roomNo: '304',
+//     bedNo: 'B2',
+//     age: 45,
+//     gender: 'Male',
+//     contactInformation: {
+//       phone: '(555) 123-4567',
+//       address: '123 Main St, City, State',
+//     },
+//     emergencyContact: {
+//       name: 'Jane Doe',
+//       relationship: 'Spouse',
+//       phone: '(555) 987-6543',
+//     },
+//     others: 'Patient requires wheelchair assistance',
+//     foodPlan: {
+//       morning: ['eggs', 'milk', 'banana'],
+//       afternoon: ['salad', 'rice', 'chicken'],
+//       evening: ['fish', 'rice', 'vegetable'],
+//       note: 'Patient is allergic to peanuts and seafood',
+//     },
 
-//////////////// CREATE USER //////////////
-const createUser = async (req, res) => {
+//////////////// CREATE PATIENT //////////////
+const createPatient = async (req, res) => {
   try {
     if (!req.body) {
       throw new Error('Request body is required');
     }
 
-    const result = await UserServices.createUser(req.body);
+    const result = await UserServices.createPatient(req.body);
 
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: 'User is created successfully',
+      message: 'Patient is added successfully',
       data: result,
     });
   } catch (error) {
     sendResponse(res, {
       statusCode: httpStatus.BAD_REQUEST,
       success: false,
-      message: error.message || 'Failed to create user',
+      message: error.message || 'Failed to add patient',
       data: null,
     });
   }
 };
 
-//////////////// GET ALL USERS //////////////
+//////////////// GET ALL PATIENT //////////////
 const getAllUsers = async (req, res) => {
   try {
     const result = await UserServices.getAllUsers();
@@ -139,36 +155,9 @@ const deleteUser = async (req, res) => {
   }
 };
 
-const loginUser = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      throw new Error('Email and password are required');
-    }
-
-    const result = await UserServices.loginUser(email, password);
-
-    sendResponse(res, {
-      statusCode: httpStatus.OK,
-      success: true,
-      message: 'User logged in successfully',
-      data: result,
-    });
-  } catch (error) {
-    sendResponse(res, {
-      statusCode: httpStatus.BAD_REQUEST,
-      success: false,
-      message: error.message || 'Login failed',
-      data: null,
-    });
-  }
-};
-
 export const UserControllers = {
   createUser,
   getAllUsers,
   updateUser,
   deleteUser,
-  loginUser,
 };

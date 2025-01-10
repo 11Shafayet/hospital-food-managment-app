@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router-dom';
-import MainLayout from '../MainLayout/MainLayout';
+import MainLayout from '../layouts/MainLayout';
+import PublicLayout from '../layouts/PublicLayout';
 import PublicRoute from './PublicRoute';
 import PrivateRoute from './PrivateRoute';
 
@@ -47,6 +48,12 @@ const router = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+    ],
+  },
+  {
+    path: '/',
+    element: <PublicLayout />,
+    children: [
       {
         path: '/sign-in',
         element: (

@@ -1,7 +1,15 @@
 import React from 'react';
+import { useAuth } from '../../Provider/AuthProvider';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { AuthContext } from '../../Provider/AuthProvider';
+import { useContext } from 'react';
 
 const StaffDetails = ({ isOpen, onClose, staff }) => {
-  const [role, setRole] = React.useState(staff?.role || 'Delivery Man');
+  const { user } = useContext(AuthContext);
+  const queryClient = useQueryClient();
+  const [role, setRole] = React.useState(staff?.role || 'deliveryMan');
   const [assignedDuty, setAssignedDuty] = React.useState(
     staff?.assignedDuty || ''
   );
@@ -13,16 +21,52 @@ const StaffDetails = ({ isOpen, onClose, staff }) => {
     phone: '(555) 123-4567',
     address: '123 Main St, City, State',
     dutyTime: '9:00 AM - 5:00 PM',
-    assignedDuty: ['Floor 1', 'Floor 2', 'Floor 3'],
+    assignedDuty: 'Floor 1',
   };
 
+  // Update mutation
+  const updateStaffMutation = useMutation({
+    mutationFn: async (updateData) => {
+      const token = localStorage.getItem('token');
+      const response = await fetch(
+        `http://localhost:5000/api/users/${staff._id}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updateData),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Failed to update staff');
+      }
+
+      return response.json();
+    },
+    onSuccess: (data, variables) => {
+      // Show different messages based on what was updated
+      const updateType = Object.keys(variables)[0];
+      toast.success(`Staff ${updateType} updated successfully!`);
+      queryClient.invalidateQueries(['staffs']);
+    },
+    onError: (error) => {
+      toast.error('Failed to update staff details');
+    },
+  });
+
   const handleRoleUpdate = () => {
-    console.log('Updating role to:', role);
+    updateStaffMutation.mutate({ role });
   };
 
   const handleDutyUpdate = () => {
-    console.log('Updating assigned duty to:', assignedDuty);
+    updateStaffMutation.mutate({ assignedDuty });
   };
+
+  // Helper function to check if user can edit
+  const canEdit = user.role === 'manager';
 
   if (!isOpen) return null;
 
@@ -30,9 +74,7 @@ const StaffDetails = ({ isOpen, onClose, staff }) => {
     <div className="w-full p-2 md:w-1/2">
       <div className="rounded-lg bg-white bg-opacity-10 p-4">
         <h3 className="text-sm font-medium text-theme">{label}</h3>
-        <div className="mt-1 text-base">
-          {Array.isArray(value) ? value.join(', ') : value}
-        </div>
+        <div className="mt-1 text-base">{value}</div>
       </div>
     </div>
   );
@@ -77,18 +119,21 @@ const StaffDetails = ({ isOpen, onClose, staff }) => {
                       value={role}
                       onChange={(e) => setRole(e.target.value)}
                       className="rounded-md bg-gray-800 px-3 py-2"
+                      disabled={!canEdit}
                     >
-                      <option value="Nurse">Nurse</option>
-                      <option value="Doctor">Doctor</option>
-                      <option value="Admin">Admin</option>
-                      <option value="Receptionist">Receptionist</option>
+                      <option value="manager">Manager</option>
+                      <option value="supervisor">Supervisor</option>
+                      <option value="deliveryMan">Delivery Man</option>
+                      <option value="chef">Chef</option>
                     </select>
-                    <button
-                      onClick={handleRoleUpdate}
-                      className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                    >
-                      Update
-                    </button>
+                    {canEdit && (
+                      <button
+                        onClick={handleRoleUpdate}
+                        className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                      >
+                        Update
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -105,13 +150,16 @@ const StaffDetails = ({ isOpen, onClose, staff }) => {
                       onChange={(e) => setAssignedDuty(e.target.value)}
                       className="w-full rounded-md bg-gray-800 px-3 py-2"
                       placeholder="Enter assigned duty"
+                      disabled={!canEdit}
                     />
-                    <button
-                      onClick={handleDutyUpdate}
-                      className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-                    >
-                      Update
-                    </button>
+                    {canEdit && (
+                      <button
+                        onClick={handleDutyUpdate}
+                        className="rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+                      >
+                        Update
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
